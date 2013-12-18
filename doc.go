@@ -7,7 +7,6 @@
 A package to manage R-like data frames.
 
 DataFrame
-=========
 
 A DataFrame is a table where columns are variables and rows are measurements.
 For example:
@@ -31,7 +30,6 @@ room is a string, wifi is an array of numbers, and acceleration is a number. In 
   }
 
 DataSet
-=======
 
 A DataSet is a collection of DataFrame files. All files must have the same schema.
 The API provides methods to iterate over the DataSet which hides teh details about files from
