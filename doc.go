@@ -23,6 +23,7 @@ room is a string, wifi is an array of numbers, and acceleration is a number. In 
     "description": "An indoor positioning data set.",
     "batchid": "24001-015",
     "var_names": ["room", "wifi", "acceleration"],
+    "properties": {"url": "http://akualab.com", "status": "experimental"},
     "data": [
       ["KITCHEN", [-56.1, -78.9, -44.12], 1.3],
       ["BATH"   , [-58, -71.1, -39.8],    1.8]
