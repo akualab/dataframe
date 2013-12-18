@@ -28,15 +28,6 @@ type DataSet struct {
 	index int
 }
 
-// A VectorSpec defines how to create a vector using a data frame.
-// A vector is a subset of a data frame such that all elements of the vector have the same type.
-// For example, to create a float64 vector using a subset of variables (columns) in a data frame,
-// each variable must be a []float64 or a float64. The order is given by the order of VarNames.
-type VectorSpec struct {
-	Type     string   `yaml:"type"`
-	VarNames []string `yaml:"var_names"`
-}
-
 // A DataFrame is a table where columns are variables and rows are measurements.
 // Each row contains an instance. Each variable can have a different type.
 type DataFrame struct {
