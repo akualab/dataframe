@@ -1,0 +1,28 @@
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+*.out
+*.test
+
+# Folders
+_obj
+_test
+tmp
+old
+
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+
+_testmain.go
+
+*.exe
+*.bak
+*~
+*.sublime-workspace
+
+darwin
+.DS_Store
