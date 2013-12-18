@@ -21,8 +21,7 @@ func main() {
 	}
 
 	// Get the float variables as a single float64 slice.
-	vecSpec := &dataframe.VectorSpec{"[]float64", []string{"chemical_concentrations", "algae"}}
-	ch1 := df.GetChanFloat64(vecSpec)
+	ch1 := df.GetChanFloat64("chemical_concentrations", "algae")
 
 	// Print slices.
 	var count int
@@ -38,7 +37,7 @@ func main() {
 	}
 
 	// Count total number of instances on all files.
-	ch2 := ds.GetChanFloat64(vecSpec)
+	ch2 := ds.GetChanFloat64("chemical_concentrations", "algae")
 	count = 0
 	for _ = range ch2 {
 		count++

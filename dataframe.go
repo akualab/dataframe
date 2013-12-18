@@ -7,13 +7,11 @@ package dataframe
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"reflect"
-	"strings"
 
 	"github.com/golang/glog"
 	"launchpad.net/goyaml"
@@ -22,8 +20,6 @@ import (
 const (
 	BUFFER_SIZE = 1000
 )
-
-var InvalidVectorSpecError = errors.New("invalid vector spec")
 
 // A list of dataframe files. Each file must have the same dataframe schema.
 type DataSet struct {
@@ -53,9 +49,6 @@ type DataFrame struct {
 
 	// Ordered list of variable names.
 	VarNames []string `json:"var_names"`
-
-	// Ordered list of variable types.
-	VarTypes []string `json:"var_types"`
 
 	// Ordered list of variables.
 	Data [][]interface{} `json:"data"`
@@ -109,7 +102,6 @@ func (ds *DataSet) Next() (df *DataFrame, e error) {
 	}
 	sep := string(os.PathSeparator)
 	glog.V(2).Infof("feature file: %s", ds.Path+sep+ds.Files[ds.index])
-	fmt.Printf("feature file: %s\n", ds.Path+sep+ds.Files[ds.index])
 	df, e = ReadDataFrameFile(ds.Path + sep + ds.Files[ds.index])
 	if e != nil {
 		return
@@ -151,19 +143,16 @@ func ReadDataFrame(r io.Reader) (df *DataFrame, e error) {
 }
 
 // Joins float64 and []float64 variables and returns them as a []float64.
-func (df *DataFrame) GetFrameFloat64(frame int, vector *VectorSpec) (floats []float64, err error) {
+func (df *DataFrame) GetFrameFloat64(frame int, names ...string) (floats []float64, err error) {
 
-	if vector == nil {
-		return nil, fmt.Errorf("vector is nil")
-	}
-	if vector.VarNames == nil {
-		return nil, fmt.Errorf("VarNames field in vector is nil, must provide at least one var name.")
+	if len(names) == 0 {
+		return nil, fmt.Errorf("No variable names were specified, must provide at least one var name.")
 	}
 
 	floats = make([]float64, 0)
 
 	var indices []int
-	indices, err = df.indices(vector)
+	indices, err = df.indices(names...)
 	if err != nil {
 		return
 	}
@@ -187,13 +176,13 @@ func (df *DataFrame) GetFrameFloat64(frame int, vector *VectorSpec) (floats []fl
 }
 
 // Joins float64 and []float64 variables. Returns a channel of []float64 frames.
-func (df *DataFrame) GetChanFloat64(vector *VectorSpec) (ch chan []float64) {
+func (df *DataFrame) GetChanFloat64(names ...string) (ch chan []float64) {
 
 	ch = make(chan []float64, BUFFER_SIZE)
 	go func() {
 		// Iterate through all the rows.
 		for i := 0; i < df.N(); i++ {
-			sl, err := df.GetFrameFloat64(i, vector)
+			sl, err := df.GetFrameFloat64(i, names...)
 			if err != nil {
 				glog.Fatalf("Reading float64 vector failed: %s", err)
 			}
@@ -207,7 +196,7 @@ func (df *DataFrame) GetChanFloat64(vector *VectorSpec) (ch chan []float64) {
 
 // Resets data set and starts reading data. Returns a channel to be used to
 // get all the frames.
-func (ds *DataSet) GetChanFloat64(vector *VectorSpec) (ch chan []float64) {
+func (ds *DataSet) GetChanFloat64(names ...string) (ch chan []float64) {
 
 	ch = make(chan []float64, BUFFER_SIZE)
 	go func() {
@@ -224,7 +213,7 @@ func (ds *DataSet) GetChanFloat64(vector *VectorSpec) (ch chan []float64) {
 
 			// Iterate through all the rows.
 			for i := 0; i < len(df.Data); i++ {
-				sl, err := df.GetFrameFloat64(i, vector)
+				sl, err := df.GetFrameFloat64(i, names...)
 				if err != nil {
 					glog.Fatalf("Reading float64 vector failed: %s", err)
 				}
@@ -248,31 +237,18 @@ func (df *DataFrame) NumVariables() int {
 	return len(df.Data[0])
 }
 
-// Returns the indices that correspond to a VectorSpec.
-// Fails if variables in vector are not of the same type.
-func (df *DataFrame) indices(vector *VectorSpec) (indices []int, err error) {
+// Returns the indices for the variable names.
+func (df *DataFrame) indices(names ...string) (indices []int, err error) {
 
 	indices = make([]int, 0)
 	var idx int
 	var ok bool
-	var lastType string
-	for _, v := range vector.VarNames {
+	for _, v := range names {
 		if idx, ok = df.varMap[v]; !ok {
 			err = fmt.Errorf("There is no variable [%s] in the data frame.")
 			return
 		}
-		if len(lastType) > 0 && lastType != elemType(df.VarTypes[idx]) {
-			return nil, InvalidVectorSpecError
-		}
-		lastType = elemType(df.VarTypes[idx])
 		indices = append(indices, idx)
 	}
 	return
-}
-
-// Get the element type. For example, if type is []float64, returns float64.
-func elemType(t string) string {
-
-	idx := strings.LastIndex(t, "]") + 1
-	return t[idx:]
 }

@@ -6,33 +6,35 @@
 /*
 A package to manage R-like data frames.
 
+DataFrame
+=========
+
 A DataFrame is a table where columns are variables and rows are measurements.
 For example:
 
-  ID     ROOM      WIFI                     ACC_Z
+  row    room      wifi                     acceleration
   0      KITCHEN   [-56.1, -78.9, -44.12]   1.3
   1      BATH      [-58, -71.1, -39.8]      1.8
   ...
 
 Each column correspond to a variable. Each variable can have a different type. In this case,
-int, string, float slice, and float. To read a data frame using json:
+room is a string, wifi is an array of numbers, and acceleration is a number. In JSON:
 
   {
     "description": "An indoor positioning data set.",
     "batchid": "24001-015",
     "var_names": ["room", "wifi", "acceleration"],
-    "var_types": ["string", "[]float64", "float64"],
     "data": [
       ["KITCHEN", [-56.1, -78.9, -44.12], 1.3],
       ["BATH"   , [-58, -71.1, -39.8],    1.8]
     ]
   }
 
-All fields are optional. It is up to the application to decide what fields to read and how to
-parse the values.
+DataSet
+=======
 
-A DataSet is a collection of DataFrames. The package provides methods to read a list of files where
-each file contains a data frame with the same schema. This can be useful to iterate over all the
-data instances (rows).
+A DataSet is a collection of DataFrame files. All files must have the same schema.
+The API provides methods to iterate over the DataSet which hides teh details about files from
+the end user.
 */
 package dataframe

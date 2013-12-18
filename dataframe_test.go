@@ -110,7 +110,7 @@ func TestNext(t *testing.T) {
 	// Get a vector for a frame id in a data frame.
 	df, dfe := ReadDataFrameFile(f1)
 	CheckError(t, dfe)
-	sl, sle := df.GetFrameFloat64(1, &VectorSpec{"[]float64", []string{"wifi", "acceleration"}})
+	sl, sle := df.GetFrameFloat64(1, "wifi", "acceleration")
 	CheckError(t, sle)
 	t.Logf("float slice for frame 1: %+v", sl)
 
@@ -128,10 +128,7 @@ func TestDataFrameChan(t *testing.T) {
 	df, dfe := ReadDataFrameFile(f1)
 	CheckError(t, dfe)
 
-	//	nrows := df.N()
-	//	ncols := df.NumVariables()
-
-	sl, sle := df.GetFrameFloat64(1, &VectorSpec{"[]float64", []string{"wifi", "acceleration"}})
+	sl, sle := df.GetFrameFloat64(1, "wifi", "acceleration")
 	CheckError(t, sle)
 	t.Logf("float slice for frame 1: %+v", sl)
 
@@ -139,14 +136,14 @@ func TestDataFrameChan(t *testing.T) {
 		t.Fatalf("vector %v doesn't match.", sl)
 	}
 
-	ch := df.GetChanFloat64(&VectorSpec{"[]float64", []string{"wifi", "acceleration"}})
+	ch := df.GetChanFloat64("wifi", "acceleration")
 
 	var count int
 	for v := range ch {
 		t.Logf("k: %d, v: %+v", count, v)
 
 		// Compare slice.
-		sl, sle := df.GetFrameFloat64(count, &VectorSpec{"[]float64", []string{"wifi", "acceleration"}})
+		sl, sle := df.GetFrameFloat64(count, "wifi", "acceleration")
 		CheckError(t, sle)
 
 		if !floats.Equal(sl, v) {
@@ -173,7 +170,6 @@ const file1 string = `{
 "description": "An indoor positioning data set.",
 "batchid": "24001-015",
 "var_names": ["room", "wifi", "acceleration"],
-"var_types": ["string", "[]float64", "float64"],
 "data": [
 ["BED5",[-40.8,-41.2],1.3],
 ["BED5",[-41.8,-41.1],1.4],
@@ -188,7 +184,6 @@ const file2 string = `{
 "description": "An indoor positioning data set.",
 "batchid": "24001-016",
 "var_names": ["room", "wifi", "acceleration"],
-"var_types": ["string", "[]float64", "float64"],
 "data": [
 ["KITCHEN",[-20.1,-31.3],1.3],
 ["KITCHEN",[-21.8,-31.1],1.4],
