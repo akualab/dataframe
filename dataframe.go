@@ -52,18 +52,18 @@ type DataFrame struct {
 }
 
 // Reads a list of filenames from a file. See ReadDataSetReader()
-func ReadDataSet(fn string) (ds *DataSet, e error) {
+func ReadDataSetFile(fn string) (ds *DataSet, e error) {
 
 	f, e := os.Open(fn)
 	if e != nil {
 		return
 	}
-	ds, e = ReadDataSetReader(f)
+	ds, e = ReadDataSet(f)
 	return
 }
 
 // Reads a list of filenames from an io.Reader.
-func ReadDataSetReader(r io.Reader) (ds *DataSet, e error) {
+func ReadDataSet(r io.Reader) (ds *DataSet, e error) {
 
 	var b []byte
 	b, e = ioutil.ReadAll(r)
@@ -134,7 +134,7 @@ func ReadDataFrame(r io.Reader) (df *DataFrame, e error) {
 }
 
 // Joins float64 and []float64 variables and returns them as a []float64.
-func (df *DataFrame) GetFrameFloat64(frame int, names ...string) (floats []float64, err error) {
+func (df *DataFrame) Float64Slice(frame int, names ...string) (floats []float64, err error) {
 
 	if len(names) == 0 {
 		return nil, fmt.Errorf("No variable names were specified, must provide at least one var name.")
@@ -167,13 +167,13 @@ func (df *DataFrame) GetFrameFloat64(frame int, names ...string) (floats []float
 }
 
 // Joins float64 and []float64 variables. Returns a channel of []float64 frames.
-func (df *DataFrame) GetChanFloat64(names ...string) (ch chan []float64) {
+func (df *DataFrame) Float64SliceChannel(names ...string) (ch chan []float64) {
 
 	ch = make(chan []float64, BUFFER_SIZE)
 	go func() {
 		// Iterate through all the rows.
 		for i := 0; i < df.N(); i++ {
-			sl, err := df.GetFrameFloat64(i, names...)
+			sl, err := df.Float64Slice(i, names...)
 			if err != nil {
 				glog.Fatalf("Reading float64 vector failed: %s", err)
 			}
@@ -185,9 +185,34 @@ func (df *DataFrame) GetChanFloat64(names ...string) (ch chan []float64) {
 	return
 }
 
+// Returns value of a string variable.
+func (df *DataFrame) String(frame int, name string) (value string, err error) {
+
+	var indices []int
+	indices, err = df.indices(name)
+	if err != nil {
+		return
+	}
+	if len(indices) == 0 {
+		err = fmt.Errorf("Failed to find a variable with name: [%s]", name)
+		return
+	}
+
+	var ok bool
+	v := df.Data[frame][indices[0]]
+	value, ok = v.(string)
+	if ok {
+		return
+	}
+
+	err = fmt.Errorf("In frame %d, variable [%d] is of type [%s]. Must be of type string.",
+		frame, name, reflect.TypeOf(v).String())
+	return
+}
+
 // Resets data set and starts reading data. Returns a channel to be used to
 // get all the frames.
-func (ds *DataSet) GetChanFloat64(names ...string) (ch chan []float64) {
+func (ds *DataSet) Float64SliceChannel(names ...string) (ch chan []float64) {
 
 	ch = make(chan []float64, BUFFER_SIZE)
 	go func() {
@@ -204,7 +229,7 @@ func (ds *DataSet) GetChanFloat64(names ...string) (ch chan []float64) {
 
 			// Iterate through all the rows.
 			for i := 0; i < len(df.Data); i++ {
-				sl, err := df.GetFrameFloat64(i, names...)
+				sl, err := df.Float64Slice(i, names...)
 				if err != nil {
 					glog.Fatalf("Reading float64 vector failed: %s", err)
 				}

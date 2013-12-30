@@ -55,7 +55,7 @@ func TestDataSet(t *testing.T) {
 	fn := createFileList(t, tmpDir)
 
 	// Read file list.
-	ds, e := ReadDataSet(fn)
+	ds, e := ReadDataSetFile(fn)
 	CheckError(t, e)
 
 	// Check DataSet content.
@@ -110,7 +110,7 @@ func TestNext(t *testing.T) {
 	// Get a vector for a frame id in a data frame.
 	df, dfe := ReadDataFrameFile(f1)
 	CheckError(t, dfe)
-	sl, sle := df.GetFrameFloat64(1, "wifi", "acceleration")
+	sl, sle := df.Float64Slice(1, "wifi", "acceleration")
 	CheckError(t, sle)
 	t.Logf("float slice for frame 1: %+v", sl)
 
@@ -128,7 +128,7 @@ func TestDataFrameChan(t *testing.T) {
 	df, dfe := ReadDataFrameFile(f1)
 	CheckError(t, dfe)
 
-	sl, sle := df.GetFrameFloat64(1, "wifi", "acceleration")
+	sl, sle := df.Float64Slice(1, "wifi", "acceleration")
 	CheckError(t, sle)
 	t.Logf("float slice for frame 1: %+v", sl)
 
@@ -136,14 +136,14 @@ func TestDataFrameChan(t *testing.T) {
 		t.Fatalf("vector %v doesn't match.", sl)
 	}
 
-	ch := df.GetChanFloat64("wifi", "acceleration")
+	ch := df.Float64SliceChannel("wifi", "acceleration")
 
 	var count int
 	for v := range ch {
 		t.Logf("k: %d, v: %+v", count, v)
 
 		// Compare slice.
-		sl, sle := df.GetFrameFloat64(count, "wifi", "acceleration")
+		sl, sle := df.Float64Slice(count, "wifi", "acceleration")
 		CheckError(t, sle)
 
 		if !floats.Equal(sl, v) {
