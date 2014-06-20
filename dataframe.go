@@ -14,7 +14,7 @@ import (
 	"reflect"
 
 	"github.com/golang/glog"
-	"launchpad.net/goyaml"
+	"gopkg.in/yaml.v1"
 )
 
 const (
@@ -70,7 +70,7 @@ func ReadDataSet(r io.Reader) (ds *DataSet, e error) {
 	if e != nil {
 		return
 	}
-	e = goyaml.Unmarshal(b, &ds)
+	e = yaml.Unmarshal(b, &ds)
 	if e != nil {
 		return
 	}
