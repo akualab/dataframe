@@ -21,7 +21,7 @@ func main() {
 	}
 
 	// Get the float variables as a single float64 slice.
-	ch1 := df.GetChanFloat64("chemical_concentrations", "algae")
+	ch1 := df.Float64SliceChannel("chemical_concentrations", "algae")
 
 	// Print slices.
 	var count int
@@ -31,13 +31,13 @@ func main() {
 	}
 
 	// Read list of files.
-	ds, e := dataframe.ReadDataSet("dataset.yaml")
+	ds, e := dataframe.ReadDataSetFile("dataset.yaml")
 	if e != nil {
 		panic(e)
 	}
 
 	// Count total number of instances on all files.
-	ch2 := ds.GetChanFloat64("chemical_concentrations", "algae")
+	ch2 := ds.Float64SliceChannel("chemical_concentrations", "algae")
 	count = 0
 	for _ = range ch2 {
 		count++
