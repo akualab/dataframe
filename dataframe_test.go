@@ -9,23 +9,27 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/gonum/floats"
 )
 
-func getTempDir() string {
+func getTempDir(t *testing.T) string {
 
 	// Prepare dirs.
-	tempDir := os.TempDir()
-	os.MkdirAll(tempDir+"data", 0755)
+	tempDir, err := ioutil.TempDir("", "dataframe-test-")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	os.MkdirAll(filepath.Join(tempDir, "data"), 0755)
 	return tempDir
 }
 
 func createFileList(t *testing.T, tmpDir string) string {
 
 	// Create file list yaml file.
-	fn := tmpDir + "filelist.yaml"
+	fn := filepath.Join(tmpDir, "filelist.yaml")
 	t.Logf("File List: %s.", fn)
 	err := ioutil.WriteFile(fn, []byte(filelistData), 0644)
 	CheckError(t, err)
@@ -35,13 +39,13 @@ func createFileList(t *testing.T, tmpDir string) string {
 func createDataFiles(t *testing.T, tmpDir string) (f1, f2 string) {
 
 	// Create data file 1.
-	f1 = tmpDir + "data" + string(os.PathSeparator) + "file1.json"
+	f1 = filepath.Join(tmpDir, "data", "file1.json")
 	t.Logf("Data File 1: %s.", f1)
 	e := ioutil.WriteFile(f1, []byte(file1), 0644)
 	CheckError(t, e)
 
 	// Create data file 2.
-	f2 = tmpDir + "data" + string(os.PathSeparator) + "file2.json"
+	f2 = filepath.Join(tmpDir, "data", "file2.json")
 	t.Logf("Data File 2: %s.", f2)
 	e = ioutil.WriteFile(f2, []byte(file2), 0644)
 	CheckError(t, e)
@@ -51,8 +55,9 @@ func createDataFiles(t *testing.T, tmpDir string) (f1, f2 string) {
 
 func TestDataSet(t *testing.T) {
 
-	tmpDir := getTempDir()
+	tmpDir := getTempDir(t)
 	fn := createFileList(t, tmpDir)
+	createDataFiles(t, tmpDir)
 
 	// Read file list.
 	ds, e := ReadDataSetFile(fn)
@@ -85,7 +90,7 @@ func TestDataSet(t *testing.T) {
 
 func TestDimensions(t *testing.T) {
 
-	tmpDir := getTempDir()
+	tmpDir := getTempDir(t)
 	f1, _ := createDataFiles(t, tmpDir)
 
 	// Get a vector for a frame id in a data frame.
@@ -104,7 +109,7 @@ func TestDimensions(t *testing.T) {
 
 func TestNext(t *testing.T) {
 
-	tmpDir := getTempDir()
+	tmpDir := getTempDir(t)
 	f1, _ := createDataFiles(t, tmpDir)
 
 	// Get a vector for a frame id in a data frame.
@@ -122,7 +127,7 @@ func TestNext(t *testing.T) {
 
 func TestDataFrameChan(t *testing.T) {
 
-	tmpDir := getTempDir()
+	tmpDir := getTempDir(t)
 	f1, _ := createDataFiles(t, tmpDir)
 
 	df, dfe := ReadDataFrameFile(f1)
